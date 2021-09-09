@@ -6,6 +6,7 @@ import sys
 import datetime
 import json
 import math
+import re
 
 # Tags for start and end of sentence
 # Not part of the real set of tags
@@ -16,14 +17,17 @@ END_OF_SENTENCE = 'EOS'
 TOTAL_TAG_COUNT = '(TOTAL-TAG-COUNT)'
 CAPITALISED_COUNT = '(CAPITALISED-WORD-COUNT)'
 ONE_OCCURENCE_COUNT = '(ONE-OCCURENCE-COUNT)'
+CARDINAL_NUMBER_COUNT = '(CARDINAL_NUMBER_COUNT)'
 TOTAL_TOKEN_COUNT = 'total_token_count'
 
 TRANSITION_FREQ = 'transition_frequency'
 EMISSION_FREQ = 'emission_frequency'
 
+NUMBER_REGEX = r'^[0-9\.\-,]*$'
+
 SUFFIXES = ['ment', 'tion', 'sion',  'ance', 'ence', 'less', 'able', 'ness', 'ship',
 'ery', 'ent', 'est', 'ive', 'ous', 'ful', 'ity', 'cy', 'ism', 'age', 'ial',
-'nce', 'ise', 'ize', 'fy', 'en', 'ed', 'es', 'er', 'st', 'ing', 'ly',   'al', 's']
+'nce', 'ise', 'ize', 'fy', 'en', 'ed', 'es', 'er', 'st', 'ing', 'ly', 'al', 's']
 
 PUNCTUATION_TAGS = ['.', ',', ':', '$', '#', '``', "''"]
 
@@ -118,13 +122,18 @@ def get_emission_prob(tag_curr, word, model):
             if word.endswith(suffix):
                 suffix_count = tag_curr_freq[f'(SUFFIX-{suffix})']
                 break
+        cardinal_count = 0
+        if bool(re.match(NUMBER_REGEX, word)):
+            cardinal_count = tag_curr_freq[CARDINAL_NUMBER_COUNT]
         suffix_count = max([suffix_count, 1])
         capitalised_count = max([capitalised_count, 1])
         one_occurence_count = max([tag_curr_freq[ONE_OCCURENCE_COUNT], 1])
+        cardinal_count = max([cardinal_count, 1])
 
         emission_prob =  one_occurence_count / tag_curr_freq[TOTAL_TAG_COUNT] \
                         * capitalised_count / tag_curr_freq[TOTAL_TAG_COUNT] \
                         * suffix_count / tag_curr_freq[TOTAL_TAG_COUNT] \
+                        * cardinal_count / tag_curr_freq[TOTAL_TAG_COUNT] \
                         * tag_curr_freq[TOTAL_TAG_COUNT] / model[TOTAL_TOKEN_COUNT] 
 
     return emission_prob

@@ -5,6 +5,7 @@ import math
 import sys
 import datetime
 import json
+import re
 
 # Tags for start and end of sentence
 # Not part of the real set of tags
@@ -16,9 +17,12 @@ TOTAL_TAG_COUNT = '(TOTAL-TAG-COUNT)'
 CAPITALISED_COUNT = '(CAPITALISED-WORD-COUNT)'
 ONE_OCCURENCE_COUNT = '(ONE-OCCURENCE-COUNT)'
 TOTAL_TOKEN_COUNT = 'total_token_count'
+CARDINAL_NUMBER_COUNT = 'cardinal_number_count'
 
 TRANSITION_FREQ = 'transition_frequency'
 EMISSION_FREQ = 'emission_frequency'
+
+NUMBER_REGEX = r'^[0-9\.\-,]*$'
 
 SUFFIXES = ['ment', 'tion', 'sion',  'ance', 'ence', 'less', 'able', 'ness', 'ship',
 'ery', 'ent', 'est', 'ive', 'ous', 'ful', 'ity', 'cy', 'ism', 'age', 'ial',
@@ -69,7 +73,7 @@ def add_emission_freq(curr_tag, word, dictionary):
 
     else:
         dictionary[curr_tag] = {TOTAL_TAG_COUNT:1, ONE_OCCURENCE_COUNT: 1, 
-                                CAPITALISED_COUNT:0} 
+                                CAPITALISED_COUNT:0, CARDINAL_NUMBER_COUNT: 0} 
         tag_data  = dictionary[curr_tag]
         for suffix in SUFFIXES:
             tag_data[f'(SUFFIX-{suffix})'] = 1
@@ -80,6 +84,8 @@ def add_emission_freq(curr_tag, word, dictionary):
     for suffix in SUFFIXES:
         if word.endswith(suffix):
             tag_data[f'(SUFFIX-{suffix})'] += 1
+    if bool(re.match(NUMBER_REGEX, word)):
+        tag_data[CARDINAL_NUMBER_COUNT] += 1
             
 
 def add_transition_freq(prev_tag, curr_tag, dictionary):
