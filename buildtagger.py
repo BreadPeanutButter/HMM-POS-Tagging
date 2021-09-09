@@ -20,6 +20,19 @@ TOTAL_TOKEN_COUNT = 'total_token_count'
 TRANSITION_FREQ = 'transition_frequency'
 EMISSION_FREQ = 'emission_frequency'
 
+SUFFIX_ED = '(SUFFIX-ed)'
+SUFFIX_S = '(SUFFIX-s)'
+SUFFIX_ES = '(SUFFIX-es)'
+SUFFIX_ING = '(SUFFIX-ing)'
+SUFFIX_LY = '(SUFFIX-ly)'
+SUFFIX_ER = '(SUFFIX-er)'
+SUFFIX_ST = '(SUFFIX-st)'
+SUFFIX_EST = '(SUFFIX-est)'
+SUFFIX_IAL = '(SUFFIX-ial)'
+SUFFIX_AL = '(SUFFIX-al)'
+SUFFIX_ENT = '(SUFFIX-ent)'
+SUFFIXES = ['ed', 'es', 'er', 'st', 's', 'ing', 'ly', 'est', 'ial', 'al', 'ent']
+
 
 def train_model(train_file, model_file):
     # write your code here. You can add functions as well.
@@ -38,11 +51,11 @@ def train_model(train_file, model_file):
 
         for token in tokens:
             word, tag = token.rsplit(sep='/', maxsplit=1)
-            add_to_dict(tag, word, emission_frequency, EMISSION_FREQ)
-            add_to_dict(previous_tag, tag, transition_frequency, TRANSITION_FREQ)
+            add_emission_freq(tag, word, emission_frequency)
+            add_transition_freq(previous_tag, tag, transition_frequency)
             previous_tag = tag
             
-        add_to_dict(previous_tag, END_OF_SENTENCE, transition_frequency, TRANSITION_FREQ)
+        add_transition_freq(previous_tag, END_OF_SENTENCE, transition_frequency)
 
     data = {TRANSITION_FREQ:transition_frequency, EMISSION_FREQ:emission_frequency, TOTAL_TOKEN_COUNT:total_tokens}
     with open(model_file, 'w', encoding='utf-8') as f:
@@ -51,28 +64,48 @@ def train_model(train_file, model_file):
     
     print('Finished...')
 
-def add_to_dict(key1, key2, dictionary, attr):
-    if key1 in dictionary:
-        tag_data  = dictionary[key1]
-        if key2 in tag_data:
-                tag_data[ONE_OCCURENCE_COUNT] -= 1 if tag_data[key2] == 1 else 0
-                tag_data[key2] += + 1
+def add_emission_freq(curr_tag, word, dictionary):
+    if curr_tag in dictionary:
+        tag_data  = dictionary[curr_tag]
+        if word in tag_data:
+            tag_data[word] += + 1
+            tag_data[ONE_OCCURENCE_COUNT] -= 1 if tag_data[word] == 1 else 0    
         else:
-            tag_data[key2] = 1
+            tag_data[word] = 1
             tag_data[ONE_OCCURENCE_COUNT] += 1
 
-        if attr == EMISSION_FREQ:
-            tag_data[CAPITALISED_COUNT] += 1 if key2[0].isupper() else 0
-        
+         
         tag_data[TOTAL_TAG_COUNT] += 1
 
     else:
-        if attr == TRANSITION_FREQ:
-            dictionary[key1] = {TOTAL_TAG_COUNT:1, ONE_OCCURENCE_COUNT: 1, key2:1} 
-        elif attr == EMISSION_FREQ:
-            count = 1 if key2[0].isupper() else 0
-            dictionary[key1] = {TOTAL_TAG_COUNT:1, ONE_OCCURENCE_COUNT: 1, 
-                                CAPITALISED_COUNT:count , key2:1} 
+        dictionary[curr_tag] = {TOTAL_TAG_COUNT:1, ONE_OCCURENCE_COUNT: 1, 
+                                CAPITALISED_COUNT:0, SUFFIX_ED:0, SUFFIX_S:0,
+                                SUFFIX_ES: 0, SUFFIX_ING:0, SUFFIX_LY:0,
+                                SUFFIX_ER:0, SUFFIX_ST:0, SUFFIX_EST:0,
+                                SUFFIX_IAL:0, SUFFIX_AL:0, SUFFIX_ENT:0,
+                                word:1} 
+        tag_data  = dictionary[curr_tag]
+
+    tag_data[CAPITALISED_COUNT] += 1 if word[0].isupper() else 0
+
+    for suffix in SUFFIXES:
+        if word.endswith(suffix):
+            tag_data[f'(SUFFIX-{suffix})'] += 1
+            
+
+def add_transition_freq(prev_tag, curr_tag, dictionary):
+    if prev_tag in dictionary:
+        tag_data  = dictionary[prev_tag]
+        if curr_tag in tag_data:
+                tag_data[ONE_OCCURENCE_COUNT] -= 1 if tag_data[curr_tag] == 1 else 0
+                tag_data[curr_tag] += + 1
+        else:
+            tag_data[curr_tag] = 1
+            tag_data[ONE_OCCURENCE_COUNT] += 1
+    else:
+        dictionary[prev_tag] = {TOTAL_TAG_COUNT:1, ONE_OCCURENCE_COUNT: 1, curr_tag:1} 
+        
+    
 
 if __name__ == "__main__":
     # make no changes here

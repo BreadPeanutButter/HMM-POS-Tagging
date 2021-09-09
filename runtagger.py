@@ -21,6 +21,7 @@ TOTAL_TOKEN_COUNT = 'total_token_count'
 TRANSITION_FREQ = 'transition_frequency'
 EMISSION_FREQ = 'emission_frequency'
 
+SUFFIXES = ['ed', 'es', 'er', 'st', 's', 'ing', 'ly', 'est', 'ial', 'al', 'ent']
 
 PUNCTUATION_TAGS = ['.', ',', ':', '$', '#', '``', "''"]
 
@@ -57,7 +58,7 @@ def viterbi(tokens, model):
             continue
 
         temp_prob_arr = [-math.inf]*len(tag_list)
-        temp_path_arr = [0]*len(tag_list)
+        temp_path_arr = [[]]*len(tag_list)
         for i, curr_tag in enumerate(tag_list):
             tag2word_probability = get_emission_prob(curr_tag, word, model)
             if tag2word_probability == 0:
@@ -82,7 +83,7 @@ def viterbi(tokens, model):
         max_log_prob[idx] = max_log_prob[idx] + math.log(eos_prob)
     
     max_idx = max_log_prob.index(max(max_log_prob))
-    
+    print(max_paths[max_idx])
     return ' '.join(max_paths[max_idx])
 
 def get_transition_prob(tag_prev, tag_curr, model):
@@ -111,9 +112,19 @@ def get_emission_prob(tag_curr, word, model):
         capitalised_count = tag_curr_freq[CAPITALISED_COUNT] if is_capitalised \
         else tag_curr_freq[TOTAL_TAG_COUNT] - tag_curr_freq[CAPITALISED_COUNT]
 
-        emission_prob = tag_curr_freq[ONE_OCCURENCE_COUNT] / tag_curr_freq[TOTAL_TAG_COUNT] \
+        suffix_count = 0
+        for suffix in SUFFIXES:
+            if word.endswith(suffix):
+                suffix_count = tag_curr_freq[f'(SUFFIX-{suffix})']
+                break
+        suffix_count = max([suffix_count, 1])
+        capitalised_count = max([capitalised_count, 1])
+        one_occurence_count = max([tag_curr_freq[ONE_OCCURENCE_COUNT], 1])
+
+        emission_prob =  one_occurence_count / tag_curr_freq[TOTAL_TAG_COUNT] \
                         * capitalised_count / tag_curr_freq[TOTAL_TAG_COUNT] \
-                        * tag_curr_freq[TOTAL_TAG_COUNT] / model[TOTAL_TOKEN_COUNT]
+                        * suffix_count / tag_curr_freq[TOTAL_TAG_COUNT] \
+                        * tag_curr_freq[TOTAL_TAG_COUNT] / model[TOTAL_TOKEN_COUNT] 
 
     return emission_prob
 

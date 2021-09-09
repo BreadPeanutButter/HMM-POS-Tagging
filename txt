@@ -1,0 +1,31 @@
+Closed: 
+ pronouns (PP PPZ)
+ determiners (DT)
+ conjunctions (CC)
+ prepositions (IN)
+ brackets (-LRB-)
+
+
+Open:
+ nouns (NN NNS) 
+ proper nouns (NNP)
+ lexical verbs 
+ adjectives (jj)
+ adverbs
+ 
+
+ Cardinal Numbers (CD) numbers, decimals, commas
+ Verb past participle (VBN) -ed
+ Verb past tense (VBD) -ed
+ Noun plural (NNS) -s
+ Verb 3rd person (VBZ) -s -es
+ Verb gerund (VBG) -ing
+ Adverb (RB) -ly
+ Adverb comparative (RBR) -er
+ Proper Noun Plural (NNPS) -s capitalised
+ Adjective comparative (JJR) -er
+ Adverb superlative (RBS) -st -est
+ Adjective superlative (JJS) -est
+
+
+ [ed, s, es, ing, ly, er, st, est, ial, al, ent]
