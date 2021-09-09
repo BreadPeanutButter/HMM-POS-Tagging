@@ -21,7 +21,9 @@ TOTAL_TOKEN_COUNT = 'total_token_count'
 TRANSITION_FREQ = 'transition_frequency'
 EMISSION_FREQ = 'emission_frequency'
 
-SUFFIXES = ['ed', 'es', 'er', 'st', 's', 'ing', 'ly', 'est', 'ial', 'al', 'ent']
+SUFFIXES = ['ment', 'tion', 'sion',  'ance', 'ence', 'less', 'able', 'ness', 'ship',
+'ery', 'ent', 'est', 'ive', 'ous', 'ful', 'ity', 'cy', 'ism', 'age', 'ial',
+'nce', 'ise', 'ize', 'fy', 'en', 'ed', 'es', 'er', 'st', 'ing', 'ly',   'al', 's']
 
 PUNCTUATION_TAGS = ['.', ',', ':', '$', '#', '``', "''"]
 
@@ -77,13 +79,14 @@ def viterbi(tokens, model):
 
     # Multiply EOS tag
     for idx, tag in enumerate(tag_list):
-        eos_prob = 0.001
+        eos_count = 0
         if END_OF_SENTENCE in model[TRANSITION_FREQ][tag]:
-            eos_prob = model[TRANSITION_FREQ][tag][END_OF_SENTENCE] / model[TRANSITION_FREQ][tag][TOTAL_TAG_COUNT]
+            eos_count = model[TRANSITION_FREQ][tag][END_OF_SENTENCE] 
+        
+        eos_prob = max([eos_count, 1]) / model[TRANSITION_FREQ][tag][TOTAL_TAG_COUNT]
         max_log_prob[idx] = max_log_prob[idx] + math.log(eos_prob)
     
     max_idx = max_log_prob.index(max(max_log_prob))
-    print(max_paths[max_idx])
     return ' '.join(max_paths[max_idx])
 
 def get_transition_prob(tag_prev, tag_curr, model):
@@ -107,9 +110,7 @@ def get_emission_prob(tag_curr, word, model):
         if tag_curr in PUNCTUATION_TAGS:
             return 0
         
-        is_capitalised = word[0].isupper()
-
-        capitalised_count = tag_curr_freq[CAPITALISED_COUNT] if is_capitalised \
+        capitalised_count = tag_curr_freq[CAPITALISED_COUNT] if word[0].isupper() \
         else tag_curr_freq[TOTAL_TAG_COUNT] - tag_curr_freq[CAPITALISED_COUNT]
 
         suffix_count = 0

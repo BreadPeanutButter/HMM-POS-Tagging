@@ -20,18 +20,9 @@ TOTAL_TOKEN_COUNT = 'total_token_count'
 TRANSITION_FREQ = 'transition_frequency'
 EMISSION_FREQ = 'emission_frequency'
 
-SUFFIX_ED = '(SUFFIX-ed)'
-SUFFIX_S = '(SUFFIX-s)'
-SUFFIX_ES = '(SUFFIX-es)'
-SUFFIX_ING = '(SUFFIX-ing)'
-SUFFIX_LY = '(SUFFIX-ly)'
-SUFFIX_ER = '(SUFFIX-er)'
-SUFFIX_ST = '(SUFFIX-st)'
-SUFFIX_EST = '(SUFFIX-est)'
-SUFFIX_IAL = '(SUFFIX-ial)'
-SUFFIX_AL = '(SUFFIX-al)'
-SUFFIX_ENT = '(SUFFIX-ent)'
-SUFFIXES = ['ed', 'es', 'er', 'st', 's', 'ing', 'ly', 'est', 'ial', 'al', 'ent']
+SUFFIXES = ['ment', 'tion', 'sion',  'ance', 'ence', 'less', 'able', 'ness', 'ship',
+'ery', 'ent', 'est', 'ive', 'ous', 'ful', 'ity', 'cy', 'ism', 'age', 'ial',
+'nce', 'ise', 'ize', 'fy', 'en', 'ed', 'es', 'er', 'st', 'ing', 'ly', 'al', 's']
 
 
 def train_model(train_file, model_file):
@@ -60,7 +51,6 @@ def train_model(train_file, model_file):
     data = {TRANSITION_FREQ:transition_frequency, EMISSION_FREQ:emission_frequency, TOTAL_TOKEN_COUNT:total_tokens}
     with open(model_file, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-    print(transition_frequency.keys())
     
     print('Finished...')
 
@@ -79,12 +69,11 @@ def add_emission_freq(curr_tag, word, dictionary):
 
     else:
         dictionary[curr_tag] = {TOTAL_TAG_COUNT:1, ONE_OCCURENCE_COUNT: 1, 
-                                CAPITALISED_COUNT:0, SUFFIX_ED:0, SUFFIX_S:0,
-                                SUFFIX_ES: 0, SUFFIX_ING:0, SUFFIX_LY:0,
-                                SUFFIX_ER:0, SUFFIX_ST:0, SUFFIX_EST:0,
-                                SUFFIX_IAL:0, SUFFIX_AL:0, SUFFIX_ENT:0,
-                                word:1} 
+                                CAPITALISED_COUNT:0} 
         tag_data  = dictionary[curr_tag]
+        for suffix in SUFFIXES:
+            tag_data[f'(SUFFIX-{suffix})'] = 1
+        tag_data[word] = 1
 
     tag_data[CAPITALISED_COUNT] += 1 if word[0].isupper() else 0
 
